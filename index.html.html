@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محلل البيانات التفاعلي | Interactive Data Analyzer</title>
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--pri:#2563eb;--pri2:#1d4ed8;--soft:#eff6ff;
+--ok:#166534;--okbg:#dcfce7;--err:#991b1b;--errbg:#fee2e2;--warn:#92400e;--warnbg:#fef3c7}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","Noto Sans Arabic","Noto Naskh Arabic",Tahoma,Arial,system-ui,sans-serif;line-height:1.6;font-size:15px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{font-size:30px}
+.top h1{margin:0;font-size:20px;line-height:1.3}
+.top p{margin:0;font-size:13px;opacity:.88}
+main{max-width:1240px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.08);padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:17px;color:var(--pri2)}
+.card h3{margin:16px 0 8px;font-size:15px}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px;font:14px/1.5 Consolas,"Courier New",monospace,"Segoe UI",Tahoma;background:#f8fafc;color:var(--ink)}
+textarea:focus,input:focus,select:focus{outline:2px solid #93c5fd;border-color:var(--pri)}
+input[type=text],input[type=search],select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+label>span{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--soft);border-color:#93c5fd}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.primary:hover{background:var(--pri2)}
+.btn.ghost{background:transparent;border-color:rgba(148,163,184,.6)}
+.top .btn.ghost{color:#fff;border-color:rgba(255,255,255,.55)}
+.top .btn.ghost:hover{background:rgba(255,255,255,.15)}
+.hint{color:var(--muted);font-size:13px;margin:8px 0 0}
+.pre{white-space:pre-line}
+.msg{margin-top:12px;padding:10px 14px;border-radius:10px;font-weight:600;white-space:pre-line}
+.msg.ok{background:var(--okbg);color:var(--ok)}
+.msg.err{background:var(--errbg);color:var(--err)}
+.msg.warn{background:var(--warnbg);color:var(--warn)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.stat{background:var(--soft);border-radius:12px;padding:14px;border:1px solid #dbeafe}
+.stat .lbl{font-size:13px;color:var(--muted)}
+.stat .val{font-size:26px;font-weight:700;color:var(--pri2);line-height:1.3}
+.stat .sub{font-size:12px;color:var(--muted)}
+.tablewrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:start;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
+th{background:#f8fafc;position:sticky;top:0;z-index:2;font-weight:700}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{background:var(--soft)}
+tbody tr:nth-child(even){background:#fafcff}
+tbody tr:hover{background:var(--soft)}
+td.num{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.tag{padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.number{background:#dbeafe;color:#1e40af}
+.tag.text{background:#e2e8f0;color:#334155}
+.tag.date{background:#fef3c7;color:#92400e}
+ul#insights{margin:0;padding-inline-start:20px}
+ul#insights li{margin:4px 0}
+.chartbox{position:relative;height:350px;margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border:1px solid #bfdbfe;color:#1e3a8a;padding:4px 6px 4px 12px;border-radius:999px;font-size:13px}
+.chip button{border:0;background:#bfdbfe;color:#1e3a8a;border-radius:50%;width:22px;height:22px;cursor:pointer;font-weight:700;line-height:1}
+.inline{display:flex;gap:8px}
+.inline input{flex:1}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.bar select{width:auto}
+.pager{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+mark{background:#fde68a;border-radius:3px;padding:0 1px}
+@media (max-width:640px){.top h1{font-size:16px}.top p{display:none}main{padding:10px}.card{padding:14px}.stat .val{font-size:22px}.inline{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">📊</span><div><h1 data-i18n="appTitle"></h1><p data-i18n="appSub"></p></div></div>
+  <button id="langBtn" class="btn ghost" type="button" aria-label="Language"></button>
+</header>
+<main>
+  <section class="card">
+    <h2 data-i18n="secInput"></h2>
+    <textarea id="raw" spellcheck="false" dir="auto" data-i18n-ph="ph"></textarea>
+    <div class="row">
+      <button id="btnAnalyze" class="btn primary" type="button" data-i18n="btnAnalyze"></button>
+      <label class="btn" for="file" data-i18n="btnFile"></label>
+      <input id="file" type="file" accept=".csv,.tsv,.txt,.tab,text/csv,text/plain,text/tab-separated-values" hidden>
+      <button id="btnSample" class="btn" type="button" data-i18n="btnSample"></button>
+      <button id="btnClear" class="btn ghost" type="button" data-i18n="btnClear"></button>
+    </div>
+    <p class="hint" data-i18n="privacy"></p>
+    <div id="msg" class="msg" role="alert" hidden></div>
+  </section>
+
+  <div id="app" hidden>
+    <section class="card"><h2 data-i18n="secOverview"></h2><div id="cards" class="cards"></div></section>
+
+    <section class="card"><h2 data-i18n="secColumns"></h2><div class="tablewrap"><table id="colTable"></table></div></section>
+
+    <section class="card"><h2 data-i18n="secInsights"></h2><ul id="insights"></ul></section>
+
+    <section class="card">
+      <h2 data-i18n="secChart"></h2>
+      <div class="grid">
+        <label><span data-i18n="lblChType"></span>
+          <select id="chType">
+            <option value="bar" data-i18n="chBar"></option>
+            <option value="line" data-i18n="chLine"></option>
+            <option value="pie" data-i18n="chPie"></option>
+            <option value="doughnut" data-i18n="chDoughnut"></option>
+            <option value="hist" data-i18n="chHist"></option>
+          </select></label>
+        <label><span data-i18n="lblChCol"></span><select id="chCol"></select></label>
+        <label><span data-i18n="lblChVal"></span><select id="chVal"></select></label>
+        <label><span data-i18n="lblChAgg"></span>
+          <select id="chAgg">
+            <option value="sum" data-i18n="aggSum"></option>
+            <option value="avg" data-i18n="aggAvg"></option>
+            <option value="min" data-i18n="aggMin"></option>
+            <option value="max" data-i18n="aggMax"></option>
+          </select></label>
+        <label><span data-i18n="lblChTop"></span>
+          <select id="chTop"><option>5</option><option selected>10</option><option>20</option><option>50</option></select></label>
+      </div>
+      <div class="chartbox" id="chartBox"><canvas id="chart"></canvas></div>
+      <p class="hint" id="chartNote"></p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="secQuery"></h2>
+      <label><span data-i18n="lblSearch"></span><input id="search" type="search" dir="auto" data-i18n-ph="phSearch"></label>
+      <div style="margin-top:12px">
+        <label><span data-i18n="lblNL"></span>
+          <div class="inline"><input id="nl" type="text" dir="auto" data-i18n-ph="phNL"><button id="nlGo" class="btn primary" type="button" data-i18n="nlGo"></button></div>
+        </label>
+        <p class="hint pre" id="nlHint"></p>
+      </div>
+      <h3 data-i18n="lblFilters"></h3>
+      <div class="grid">
+        <label><span data-i18n="lblFCol"></span><select id="fCol"></select></label>
+        <label><span data-i18n="lblFOp"></span><select id="fOp"></select></label>
+        <label><span data-i18n="lblFV1"></span><input id="fV1" type="text" dir="auto"></label>
+        <label id="fV2wrap" hidden><span data-i18n="lblFV2"></span><input id="fV2" type="text" dir="auto"></label>
+        <div><button id="fAdd" class="btn" type="button" data-i18n="fAdd"></button></div>
+      </div>
+      <div id="chips" class="chips"></div>
+      <div class="grid">
+        <label><span data-i18n="lblSort"></span><select id="sortCol"></select></label>
+        <label><span data-i18n="lblSortDir"></span>
+          <select id="sortDir"><option value="1" data-i18n="asc"></option><option value="-1" data-i18n="desc"></option></select></label>
+        <label><span data-i18n="lblGroup"></span><select id="grpCol"></select></label>
+        <label><span data-i18n="lblMeasure"></span><select id="grpMeasure"></select></label>
+      </div>
+    </section>
+
+    <section class="card" id="groupCard" hidden>
+      <div class="bar"><h2 style="margin:0" data-i18n="secGroup"></h2><button id="gClose" class="btn" type="button" data-i18n="gClose"></button></div>
+      <p class="hint" id="gNote"></p>
+      <div class="tablewrap"><table id="groupTable"></table></div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="secTable"></h2>
+      <div class="bar">
+        <span id="tInfo" class="hint" style="margin:0"></span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="perPage" aria-label="per page"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+          <button id="btnExport" class="btn" type="button" data-i18n="exportBtn"></button>
+        </span>
+      </div>
+      <div class="tablewrap"><table id="dataTable"></table></div>
+      <div class="pager" id="pager"></div>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ======================= Translations ======================= */
+const T={
+ar:{
+appTitle:'محلل البيانات التفاعلي',
+appSub:'الصق بياناتك أو ارفع ملف CSV لتحصل على قراءات ورسوم واستعلامات فورية — كل المعالجة داخل متصفحك',
+langBtn:'English',
+secInput:'إدخال البيانات',
+ph:'الصق هنا نصاً أو CSV أو جدولاً منسوخاً من Excel — الصف الأول يمثل أسماء الأعمدة…',
+btnAnalyze:'تحليل البيانات',btnFile:'رفع ملف CSV',btnSample:'بيانات تجريبية',btnClear:'مسح الكل',
+privacy:'🔒 الخصوصية: تتم المعالجة بالكامل داخل متصفحك ولا تُرسل أي بيانات إلى أي جهة خارجية.',
+secOverview:'نظرة عامة',
+cardRecords:'السجلات المعروضة',cardRecordsSub:'من أصل {n} سجل',
+cardCols:'الأعمدة',cardColsSub:'{n} رقمي · {d} تاريخ · {t} نصي',
+cardMissing:'القيم الناقصة',cardMissingSub:'في السجلات المعروضة',
+cardComplete:'اكتمال البيانات',cardCompleteSub:'نسبة الخلايا المعبأة',
+secColumns:'قراءات تفصيلية لكل عمود',
+thCol:'العمود',thType:'النوع',thUnique:'قيم فريدة',thMissing:'ناقصة',thSum:'المجموع',thAvg:'المتوسط',thMin:'الأدنى',thMax:'الأعلى',thMedian:'الوسيط',thTop:'الأكثر تكراراً',
+type_number:'رقم',type_text:'نص',type_date:'تاريخ',
+secInsights:'أبرز الأنماط الملحوظة',noInsights:'لا توجد أنماط لافتة في السجلات الحالية.',
+insTop:'{c}: أكثر قيمة تكراراً «{v}» ({n} مرة — {p}%)',
+insMiss:'{c}: {n} قيمة ناقصة ({p}%)',
+insUnique:'{c}: جميع القيم فريدة (يصلح كمعرّف)',
+insOut:'{c}: {n} قيمة شاذة محتملة خارج النطاق المعتاد',
+secChart:'الرسوم البيانية',lblChType:'نوع الرسم',chBar:'أعمدة',chLine:'خطوط',chPie:'دائري',chDoughnut:'حلقي',chHist:'توزيع (مدرّج)',
+lblChCol:'العمود',lblChVal:'القياس',optCount:'عدد السجلات',lblChAgg:'الدالة',aggSum:'مجموع',aggAvg:'متوسط',aggMin:'أدنى',aggMax:'أعلى',lblChTop:'أعلى (عدد العناصر)',
+chartNoData:'لا توجد بيانات لرسمها في التصفية الحالية.',
+chartMissing:'تعذّر تحميل مكتبة الرسوم (Chart.js) — تحقق من اتصال الإنترنت. بقية الأدوات تعمل بشكل طبيعي.',
+chartBins:'تم تجميع القيم الرقمية في فئات.',chartTop:'يُعرض أعلى {n} من أصل {m} قيمة.',
+chartHistFb:'التوزيع يتطلب عموداً رقمياً — تم عرض تكرار القيم بدلاً منه.',chartCount:'عدد السجلات',
+secQuery:'الاستعلام الذكي',lblSearch:'بحث فوري في كل الحقول',phSearch:'اكتب للبحث…',
+lblNL:'استعلام بلغة طبيعية',phNL:'مثال: اعرض السجلات التي قيمتها أكبر من 1000',nlGo:'تنفيذ',
+nlHint:'الصيغ المدعومة:\n• اعرض السجلات التي قيمتها أكبر من 1000 · المدينة تساوي جدة · بين 10 و 50\n• الصفوف التي تحتوي كلمة جدة · العمود فارغ · تبدأ بـ …\n• رتب حسب [العمود] تنازلي · تجميع حسب [العمود] · الربط بـ «و»\n• show rows where value greater than 1000 · rows containing Jeddah',
+lblFilters:'تصفية متعددة المعايير',lblFCol:'العمود',lblFOp:'الشرط',lblFV1:'القيمة',lblFV2:'إلى',fAdd:'إضافة تصفية',fAllFields:'كل الحقول',
+op_contains:'يحتوي',op_notcontains:'لا يحتوي',op_equals:'يساوي',op_notequals:'لا يساوي',op_starts:'يبدأ بـ',op_ends:'ينتهي بـ',
+op_gt:'أكبر من',op_gte:'أكبر من أو يساوي',op_lt:'أصغر من',op_lte:'أصغر من أو يساوي',op_between:'بين',op_empty:'فارغ',op_notempty:'غير فارغ',
+clearFilters:'مسح كل التصفيات',removeFilter:'إزالة',
+lblSort:'الفرز حسب',sortNone:'— بدون —',lblSortDir:'الاتجاه',asc:'تصاعدي',desc:'تنازلي',
+lblGroup:'التجميع حسب',groupNone:'— بدون —',lblMeasure:'قياس التجميع',measureNone:'— العدد فقط —',
+secTable:'الجدول',showing:'عرض {a}–{b} من {n} سجل (الإجمالي {t})',noRows:'لا توجد سجلات مطابقة.',
+prev:'السابق',next:'التالي',pageOf:'صفحة {p} من {t}',exportBtn:'تصدير النتائج CSV',
+secGroup:'نتائج التجميع',gKey:'القيمة',gCount:'العدد',gPct:'النسبة',gSum:'المجموع',gAvg:'المتوسط',gMin:'الأدنى',gMax:'الأعلى',gMeasure:'القياس',gClose:'إلغاء التجميع',gLimit:'يُعرض أول {n} مجموعة فقط.',emptyVal:'(فارغ)',
+colN:'عمود {n}',
+okLoaded:'تم تحليل البيانات: {r} سجل و{c} عمود.',
+warnQuotes:'تنبيه: وُجدت علامة اقتباس غير مغلقة، لذلك قُرئ النص دون معالجة علامات الاقتباس.',
+warnRagged:'تنبيه: {n} سجل كان عدد خلاياه مختلفاً عن عدد الأعمدة وتمت موازنته.',
+errEmpty:'لا توجد بيانات. الصق نصاً أو جدولاً أو ارفع ملف CSV أولاً.',
+errNoRows:'وُجد صف العناوين فقط. أضف سجلاً واحداً على الأقل بعد الصف الأول.',
+errBinary:'يبدو أن الملف ثنائي أو بصيغة Excel (xlsx) وليس نصاً. احفظه بصيغة CSV ثم أعد المحاولة.',
+errCorrupt:'تعذّرت قراءة البيانات: الملف تالف أو ترميزه غير مدعوم أو بنيته غير منتظمة.',
+errFileType:'صيغة الملف «{n}» غير مدعومة. استخدم ملف CSV أو TSV أو TXT.',
+errFileRead:'حدث خطأ أثناء قراءة الملف. تأكد من أنه غير تالف وأعد المحاولة.',
+errUnknown:'حدث خطأ غير متوقع: {m}',
+errNoData:'حمّل بيانات أولاً.',errNeedValue:'أدخل قيمة للتصفية.',errNeedValue2:'أدخل القيمة الثانية للنطاق.',
+errBadValue:'القيمة «{v}» غير صالحة للعمود «{c}» (النوع: {t}).',
+okNL:'تم التطبيق: {s}',cleared:'تم مسح التصفيات.',
+errNLCol:'لم أجد العمود «{c}». الأعمدة المتاحة: {l}',
+errNL:'لم أفهم الجملة «{q}».\nالصيغ المدعومة:\n• اعرض السجلات التي [العمود] أكبر من / أصغر من / تساوي / لا تساوي / بين X و Y\n• الصفوف التي تحتوي كلمة … · تبدأ بـ … · تنتهي بـ …\n• [العمود] فارغ / غير فارغ\n• رتب حسب [العمود] تنازلي · تجميع حسب [العمود]\n• يمكن الجمع بين شرطين بـ «و»\nEnglish: show rows where value greater than 1000 · rows containing Jeddah'
+},
+en:{
+appTitle:'Interactive Data Analyzer',
+appSub:'Paste your data or upload a CSV for instant insights, charts and queries — everything runs in your browser',
+langBtn:'العربية',
+secInput:'Data input',
+ph:'Paste text, CSV, or a table copied from Excel here — the first row is the column names…',
+btnAnalyze:'Analyze data',btnFile:'Upload CSV file',btnSample:'Sample data',btnClear:'Clear all',
+privacy:'🔒 Privacy: all processing happens entirely in your browser. No data is sent anywhere.',
+secOverview:'Overview',
+cardRecords:'Records shown',cardRecordsSub:'of {n} records',
+cardCols:'Columns',cardColsSub:'{n} numeric · {d} date · {t} text',
+cardMissing:'Missing values',cardMissingSub:'in the shown records',
+cardComplete:'Data completeness',cardCompleteSub:'share of filled cells',
+secColumns:'Detailed column readings',
+thCol:'Column',thType:'Type',thUnique:'Unique',thMissing:'Missing',thSum:'Sum',thAvg:'Average',thMin:'Min',thMax:'Max',thMedian:'Median',thTop:'Most frequent',
+type_number:'Number',type_text:'Text',type_date:'Date',
+secInsights:'Notable patterns',noInsights:'No notable patterns in the current records.',
+insTop:'{c}: most frequent value “{v}” ({n} times — {p}%)',
+insMiss:'{c}: {n} missing values ({p}%)',
+insUnique:'{c}: all values are unique (could be an ID)',
+insOut:'{c}: {n} possible outliers outside the usual range',
+secChart:'Charts',lblChType:'Chart type',chBar:'Bar',chLine:'Line',chPie:'Pie',chDoughnut:'Doughnut',chHist:'Distribution (histogram)',
+lblChCol:'Column',lblChVal:'Measure',optCount:'Record count',lblChAgg:'Function',aggSum:'Sum',aggAvg:'Average',aggMin:'Min',aggMax:'Max',lblChTop:'Top (items)',
+chartNoData:'No data to chart for the current filter.',
+chartMissing:'Could not load the charting library (Chart.js) — check your internet connection. All other tools still work.',
+chartBins:'Numeric values were grouped into bins.',chartTop:'Showing the top {n} of {m} values.',
+chartHistFb:'Distribution needs a numeric column — showing value frequencies instead.',chartCount:'Record count',
+secQuery:'Smart query',lblSearch:'Instant search across all fields',phSearch:'Type to search…',
+lblNL:'Natural-language query',phNL:'e.g. show rows where value greater than 1000',nlGo:'Run',
+nlHint:'Supported forms:\n• show rows where value greater than 1000 · city equals Jeddah · between 10 and 50\n• rows containing Jeddah · column is empty · starts with …\n• sort by [column] desc · group by [column] · chain with “and”\n• اعرض السجلات التي قيمتها أكبر من 1000 · الصفوف التي تحتوي كلمة جدة',
+lblFilters:'Multi-criteria filters',lblFCol:'Column',lblFOp:'Condition',lblFV1:'Value',lblFV2:'To',fAdd:'Add filter',fAllFields:'All fields',
+op_contains:'contains',op_notcontains:'does not contain',op_equals:'equals',op_notequals:'does not equal',op_starts:'starts with',op_ends:'ends with',
+op_gt:'greater than',op_gte:'greater than or equal',op_lt:'less than',op_lte:'less than or equal',op_between:'between',op_empty:'is empty',op_notempty:'is not empty',
+clearFilters:'Clear all filters',removeFilter:'Remove',
+lblSort:'Sort by',sortNone:'— None —',lblSortDir:'Direction',asc:'Ascending',desc:'Descending',
+lblGroup:'Group by',groupNone:'— None —',lblMeasure:'Group measure',measureNone:'— Count only —',
+secTable:'Table',showing:'Showing {a}–{b} of {n} records (total {t})',noRows:'No matching records.',
+prev:'Previous',next:'Next',pageOf:'Page {p} of {t}',exportBtn:'Export results CSV',
+secGroup:'Grouped results',gKey:'Value',gCount:'Count',gPct:'Share',gSum:'Sum',gAvg:'Average',gMin:'Min',gMax:'Max',gMeasure:'Measure',gClose:'Remove grouping',gLimit:'Showing the first {n} groups only.',emptyVal:'(empty)',
+colN:'Column {n}',
+okLoaded:'Data analyzed: {r} records and {c} columns.',
+warnQuotes:'Note: an unclosed quote was found, so the text was read without quote handling.',
+warnRagged:'Note: {n} records had a different number of cells than the columns and were adjusted.',
+errEmpty:'No data. Paste text or a table, or upload a CSV file first.',
+errNoRows:'Only the header row was found. Add at least one record after the first row.',
+errBinary:'The file looks binary or Excel (xlsx), not text. Save it as CSV and try again.',
+errCorrupt:'Could not read the data: the file is corrupted, its encoding is unsupported, or its structure is irregular.',
+errFileType:'File type “{n}” is not supported. Use a CSV, TSV or TXT file.',
+errFileRead:'An error occurred while reading the file. Make sure it is not corrupted and try again.',
+errUnknown:'Unexpected error: {m}',
+errNoData:'Load data first.',errNeedValue:'Enter a value to filter by.',errNeedValue2:'Enter the second value of the range.',
+errBadValue:'The value “{v}” is not valid for column “{c}” (type: {t}).',
+okNL:'Applied: {s}',cleared:'Filters cleared.',
+errNLCol:'Column “{c}” was not found. Available columns: {l}',
+errNL:'I could not understand “{q}”.\nSupported forms:\n• show rows where [column] greater than / less than / equals / not equals / between X and Y\n• rows containing … · starts with … · ends with …\n• [column] is empty / is not empty\n• sort by [column] desc · group by [column]\n• chain two conditions with “and”\nعربي: اعرض السجلات التي قيمتها أكبر من 1000 · الصفوف التي تحتوي كلمة جدة'
+}};
+
+let lang='ar';
+try{const s=localStorage.getItem('ida_lang');if(s==='ar'||s==='en')lang=s;}catch(e){}
+const $=id=>document.getElementById(id);
+function t(k,p){let s=(T[lang]&&T[lang][k]!==undefined)?T[lang][k]:(T.ar[k]!==undefined?T.ar[k]:k);if(p)for(const key in p)s=s.split('{'+key+'}').join(String(p[key]));return s;}
+function E(key,params){const e=new Error(key);e.key=key;e.params=params;return e;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* ======================= State ======================= */
+const S={cols:[],rows:[],types:[],miss:[],pv:[],nr:[],rowText:[],filters:[],search:'',sortCol:-1,sortDir:1,groupCol:-1,groupMeasure:-1,page:0,pageSize:50,view:[],stats:[],chart:null,lastMsg:null};
+
+/* ======================= Text helpers ======================= */
+const AR_DIG='٠١٢٣٤٥٦٧٨٩',FA_DIG='۰۱۲۳۴۵۶۷۸۹';
+function digits(s){return String(s).replace(/[٠-٩]/g,d=>AR_DIG.indexOf(d)).replace(/[۰-۹]/g,d=>FA_DIG.indexOf(d)).replace(/٫/g,'.').replace(/٬/g,',');}
+function norm(s){return digits(s).toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();}
+function parseNum(v){
+  if(v==null)return null;
+  let s=digits(v).trim();if(!s)return null;
+  s=s.replace(/\s/g,'').replace(/%$/,'');
+  s=s.replace(/^(sar|sr|usd|\$|ر\.س|ريال|﷼)/i,'').replace(/(sar|sr|usd|\$|ر\.س|ريال|﷼)$/i,'');
+  if(/^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s))s=s.replace(/,/g,'');
+  else if(/^[-+]?\d+,\d{1,2}$/.test(s))s=s.replace(',','.');
+  if(/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s))return parseFloat(s);
+  return null;
+}
+function mkDate(y,mo,d){if(mo<1||mo>12||d<1||d>31)return null;const dt=new Date(Date.UTC(y,mo-1,d));if(dt.getUTCMonth()!==mo-1)return null;return dt.getTime();}
+function parseDate(v){
+  const s=digits(v).trim();let m;
+  if((m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[T\s]\d{1,2}:\d{2}(?::\d{2})?)?$/)))return mkDate(+m[1],+m[2],+m[3]);
+  if((m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?$/))){let a=+m[1],b=+m[2];if(b>12&&a<=12){const x=a;a=b;b=x;}return mkDate(+m[3],b,a);}
+  return null;
+}
+function isMissing(v){return v===''||/^(null|n\/a|na|nan|none|undefined|-|--|—)$/i.test(v);}
+function fmt(x){if(x==null||isNaN(x))return '—';return Number(x).toLocaleString('en-US',{maximumFractionDigits:2});}
+function fmtDate(ts){return new Date(ts).toISOString().slice(0,10);}
+function quantile(a,q){const pos=(a.length-1)*q,lo=Math.floor(pos),hi=Math.ceil(pos);return a[lo]+(a[hi]-a[lo])*(pos-lo);}
+
+/* ======================= Parsing ======================= */
+function countOutside(line,d){let n=0,q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"')q=!q;else if(!q&&ch===d)n++;}return n;}
+function detectDelim(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim()).slice(0,12);
+  let best=',',bs=-1;
+  for(const d of ['\t',',',';','|','،']){
+    const counts=lines.map(l=>countOutside(l,d));const first=counts[0];
+    if(!first)continue;
+    const score=counts.filter(c=>c===first).length*1000+first;
+    if(score>bs){bs=score;best=d;}
+  }
+  return best;
+}
+function parseDelimited(text,d,useQ){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=ch;
+    }else{
+      if(useQ&&ch==='"'&&cur===''){q=true;}
+      else if(ch===d){row.push(cur);cur='';}
+      else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cur);cur='';rows.push(row);row=[];}
+      else cur+=ch;
+    }
+  }
+  if(q)throw new Error('unclosed');
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(c=>c.trim()!==''));
+}
+function buildDataset(text){
+  text=String(text||'').replace(/^\uFEFF/,'');
+  if(!text.trim())throw E('errEmpty');
+  if(/[\u0000-\u0008\u000E-\u001F]/.test(text.slice(0,5000)))throw E('errBinary');
+  const d=detectDelim(text);const warn=[];let rows;
+  try{rows=parseDelimited(text,d,true);}catch(e){try{rows=parseDelimited(text,d,false);warn.push({key:'warnQuotes'});}catch(e2){throw E('errCorrupt');}}
+  if(!rows.length)throw E('errEmpty');
+  if(rows.length<2)throw E('errNoRows');
+  let width=0;for(const r of rows)if(r.length>width)width=r.length;
+  if(width<1)throw E('errEmpty');
+  const cols=[],used=new Set(),hdr=rows[0];
+  for(let c=0;c<width;c++){
+    let name=(hdr[c]||'').trim();if(!name)name=t('colN',{n:c+1});
+    const base=name;let k=2;while(used.has(name)){name=base+' ('+k+')';k++;}
+    used.add(name);cols.push(name);
+  }
+  let ragged=0;
+  const data=rows.slice(1).map(r=>{if(r.length!==width)ragged++;const o=new Array(width);for(let c=0;c<width;c++)o[c]=(r[c]==null?'':String(r[c])).trim();return o;});
+  if(data.length&&ragged/data.length>0.5)throw E('errCorrupt');
+  if(ragged>0)warn.push({key:'warnRagged',params:{n:ragged}});
+  const types=cols.map((_,c)=>{
+    let tot=0,nn=0,dd=0;
+    for(const r of data){const v=r[c];if(isMissing(v))continue;tot++;if(parseNum(v)!==null)nn++;else if(parseDate(v)!==null)dd++;}
+    if(!tot)return 'text';
+    if(nn/tot>=0.9)return 'number';
+    if(dd/tot>=0.9)return 'date';
+    return 'text';
+  });
+  return {cols,rows:data,types,warn};
+}
+function applyDataset(ds){
+  S.cols=ds.cols;S.rows=ds.rows;S.types=ds.types;
+  S.miss=ds.rows.map(r=>r.map(isMissing));
+  S.pv=ds.rows.map((r,i)=>r.map((v,c)=>{if(S.miss[i][c])return null;return S.types[c]==='number'?parseNum(v):(S.types[c]==='date'?parseDate(v):null);}));
+  S.nr=ds.rows.map(r=>r.map(norm));
+  S.rowText=S.nr.map(a=>a.join('\u0001'));
+  S.filters=[];S.search='';S.sortCol=-1;S.sortDir=1;S.groupCol=-1;S.groupMeasure=-1;S.page=0;
+  $('search').value='';$('fV1').value='';$('fV2').value='';
+  refreshControls(false);pickDefaultChart();syncControls();syncOpUI();
+}
+
+/* ======================= Filtering ======================= */
+function getCmp(c,r,v){
+  const ty=S.types[c];
+  if(ty==='number')return [S.pv[r][c],parseNum(v)];
+  if(ty==='date')return [S.pv[r][c],parseDate(v)];
+  const a=parseNum(S.rows[r][c]),b=parseNum(v);
+  if(a!==null&&b!==null)return [a,b];
+  return [S.nr[r][c],norm(v)];
+}
+function testFilter(f,r){
+  const op=f.op;
+  if(f.col==='*'){
+    const hay=S.nr[r],v=norm(f.v1),any=S.rowText[r].indexOf(v)>=0;
+    switch(op){
+      case 'contains':return any;
+      case 'notcontains':return !any;
+      case 'equals':return hay.some(x=>x===v);
+      case 'notequals':return !hay.some(x=>x===v);
+      case 'starts':return hay.some(x=>x.startsWith(v));
+      case 'ends':return hay.some(x=>x.endsWith(v)&&x!=='');
+      default:return false;
+    }
+  }
+  const c=f.col;
+  if(op==='empty')return S.miss[r][c];
+  if(op==='notempty')return !S.miss[r][c];
+  const nv=S.nr[r][c],a=norm(f.v1);
+  switch(op){
+    case 'contains':return nv.indexOf(a)>=0;
+    case 'notcontains':return nv.indexOf(a)<0;
+    case 'starts':return nv.startsWith(a);
+    case 'ends':return nv.endsWith(a);
+    case 'equals':case 'notequals':{
+      let eq;const ty=S.types[c];
+      if(ty==='number'||ty==='date'){const p=getCmp(c,r,f.v1);eq=(p[0]!==null&&p[1]!==null)?p[0]===p[1]:nv===a;}
+      else eq=nv===a;
+      return op==='equals'?eq:!eq;
+    }
+    case 'gt':case 'gte':case 'lt':case 'lte':{
+      if(S.miss[r][c])return false;
+      const p=getCmp(c,r,f.v1);if(p[0]===null||p[1]===null)return false;
+      if(op==='gt')return p[0]>p[1];if(op==='gte')return p[0]>=p[1];
+      if(op==='lt')return p[0]<p[1];return p[0]<=p[1];
+    }
+    case 'between':{
+      if(S.miss[r][c])return false;
+      const p1=getCmp(c,r,f.v1),p2=getCmp(c,r,f.v2);
+      if(p1[0]===null||p1[1]===null||p2[1]===null)return false;
+      const lo=p1[1]<p2[1]?p1[1]:p2[1],hi=p1[1]<p2[1]?p2[1]:p1[1];
+      return p1[0]>=lo&&p1[0]<=hi;
+    }
+  }
+  return false;
+}
+function countRows(f){let n=0;for(let r=0;r<S.rows.length;r++)if(testFilter(f,r))n++;return n;}
+function compute(){
+  const q=norm(S.search),out=[];
+  for(let r=0;r<S.rows.length;r++){
+    if(q&&S.rowText[r].indexOf(q)<0)continue;
+    let ok=true;
+    for(const f of S.filters){if(!testFilter(f,r)){ok=false;break;}}
+    if(ok)out.push(r);
+  }
+  if(S.sortCol>=0){
+    const c=S.sortCol,d=S.sortDir,ty=S.types[c];
+    out.sort((a,b)=>{
+      const ma=S.miss[a][c],mb=S.miss[b][c];
+      if(ma||mb)return ma===mb?0:(ma?1:-1);
+      if(ty==='text')return d*S.rows[a][c].localeCompare(S.rows[b][c],undefined,{numeric:true,sensitivity:'base'});
+      const x=S.pv[a][c],y=S.pv[b][c];
+      if(x===null||y===null){if(x===y)return 0;return x===null?1:-1;}
+      return d*(x-y);
+    });
+  }
+  S.view=out;
+}
+function validateFilter(f){
+  if(f.op==='empty'||f.op==='notempty')return null;
+  if(f.v1==='')return {key:'errNeedValue'};
+  if(f.op==='between'&&f.v2==='')return {key:'errNeedValue2'};
+  if(f.col!=='*'){
+    const ty=S.types[f.col];
+    if((ty==='number'||ty==='date')&&['equals','notequals','gt','gte','lt','lte','between'].indexOf(f.op)>=0){
+      const p=ty==='number'?parseNum:parseDate;
+      const vals=f.op==='between'?[f.v1,f.v2]:[f.v1];
+      for(const v of vals)if(p(v)===null)return {key:'errBadValue',params:{v:v,c:S.cols[f.col],t:t('type_'+ty)}};
+    }
+  }
+  return null;
+}
+function filterPlain(f){
+  const cn=f.col==='*'?t('fAllFields'):S.cols[f.col];
+  let v='';
+  if(f.op==='between')v=f.v1+' ↔ '+f.v2;else if(f.op!=='empty'&&f.op!=='notempty')v=f.v1;
+  return (cn+' '+t('op_'+f.op)+' '+v).trim();
+}
+
+/* ======================= Natural-language query ======================= */
+const OPDEFS=[
+['notempty',['غير فارغ','غير فارغه','غير ناقص','غير ناقصه','غير خالي','غير خاليه','معبا','معباه','له قيمه','لها قيمه','has value','is not empty','not empty','is not blank','not blank','is filled','filled']],
+['empty',['فارغ','فارغه','فارغين','ناقص','ناقصه','خالي','خاليه','بدون قيمه','بلا قيمه','is empty','is blank','is missing','is null','empty','blank','missing','null']],
+['notcontains',['لا تحتوي علي','لا يحتوي علي','لا تحتوي','لا يحتوي','لا تتضمن','لا يتضمن','بدون','does not contain',"doesn't contain",'not containing','not contain','without']],
+['notequals',['لا يساوي','لا تساوي','ليس','ليست','غير','يختلف عن','تختلف عن','does not equal',"doesn't equal",'not equal to','not equal','is not',"isn't",'!=','<>','≠']],
+['starts',['starts with','start with','begins with','begin with','starting with','تبدا ب','تبدا بكلمه','يبدا ب','يبدا بكلمه','تبدا','يبدا']],
+['ends',['ends with','end with','ending with','تنتهي ب','تنتهي بكلمه','ينتهي ب','ينتهي بكلمه','تنتهي','ينتهي']],
+['between',['between','بين']],
+['gte',['>=','≥','greater than or equal to','greater than or equal','more than or equal to','at least','اكبر من او يساوي','اكثر من او يساوي','لا يقل عن','لا تقل عن','علي الاقل']],
+['lte',['<=','≤','less than or equal to','less than or equal','at most','اصغر من او يساوي','اقل من او يساوي','لا يزيد عن','لا تزيد عن','علي الاكثر']],
+['gt',['>','greater than','more than','bigger than','larger than','higher than','over','above','exceeds','exceeding','اكبر من','اكثر من','اعلي من','يزيد عن','تزيد عن','يتجاوز','تتجاوز','فوق']],
+['lt',['<','less than','smaller than','lower than','fewer than','under','below','اصغر من','اقل من','ادني من','دون','تحت']],
+['contains',['contains','containing','contain','includes','including','include','has the word','has','with','like','تحتوي علي كلمه','يحتوي علي كلمه','تحتوي علي','يحتوي علي','تحتوي كلمه','يحتوي كلمه','تحتوي','يحتوي','تتضمن','يتضمن','فيها','فيه','مثل']],
+['equals',['equals','equal to','equal','is','are','==','=','يساوي','تساوي','هو','هي']]
+];
+const OPRE=OPDEFS.map(function(d){
+  const parts=d[1].slice().sort((a,b)=>b.length-a.length).map(function(k){
+    const e=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return /^[a-z\u0600-\u06FF]/i.test(k)?'(?:^|\\s)'+e+'(?=\\s|$)':e;
+  });
+  return {op:d[0],re:new RegExp(parts.join('|'))};
+});
+function findOp(n){
+  for(const o of OPRE){const m=o.re.exec(n);if(m)return {op:o.op,left:n.slice(0,m.index),right:n.slice(m.index+m[0].length).trim()};}
+  return null;
+}
+const NOISE=new Set(('show display list find get give me all the rows row records record entries entry where that which whose with have has having are is of a an column field in only those every each search for select '+
+'اعرض اعرضلي اظهر عرض ابحث هات جيب اعطني لي كل جميع السجلات السجل سجلات الصفوف الصف صفوف صف الاسطر التي الذي اللي الذين حيث الي يكون تكون كان كانت فقط عمود العمود حقل الحقل التي عندما عن في').split(' '));
+function stripNoise(p){return p.split(' ').filter(w=>w&&!NOISE.has(w)).join(' ');}
+const SORTW=new Set(['sort','sorted','رتب','رتبها','رتبهم','ترتيب','فرز','افرز']);
+const GROUPW=new Set(['group','grouped','groupby','تجميع','جمعها','اجمع','جمع','صنف']);
+const DIRS={asc:1,ascending:1,increasing:1,'تصاعدي':1,'تصاعديا':1,desc:-1,descending:-1,decreasing:-1,'تنازلي':-1,'تنازليا':-1};
+const CLEAR_RE=/^(?:clear|reset|show all|show everything|remove filters|مسح|الغاء|ازاله|عرض الكل|اعرض الكل|اظهر الكل|اعاده ضبط)(?:\s|$)/;
+const GEN_RE=/^(?:قيم|مبلغ|سعر|اجمال|مجموع|رقم|كمي|value|amount|price|total|number|qty|quantity)/;
+function stem(s){
+  s=norm(s);
+  if(/^[a-z0-9 _.\-]+$/.test(s)){s=s.replace(/\s+/g,'');if(s.length>3&&s.charAt(s.length-1)==='s')s=s.slice(0,-1);return s;}
+  s=s.replace(/^ال/,'');s=s.replace(/(ها|هم|هن|كم|نا|ه|ك|ي)$/,'');s=s.replace(/[ته]$/,'');
+  return s;
+}
+function resolveColumn(phrase){
+  const p=norm(phrase);if(!p)return null;
+  const ps=stem(p),heads=S.cols.map(norm),hs=S.cols.map(stem);
+  let i=heads.indexOf(p);if(i>=0)return i;
+  i=hs.findIndex(h=>h&&h===ps);if(i>=0)return i;
+  i=heads.findIndex(h=>p.length>=2&&h.indexOf(p)>=0);if(i>=0)return i;
+  i=heads.findIndex(h=>h.length>=3&&p.indexOf(h)>=0);if(i>=0)return i;
+  i=hs.findIndex(h=>h.length>=2&&ps.length>=2&&(h.indexOf(ps)>=0||ps.indexOf(h)>=0));if(i>=0)return i;
+  if(GEN_RE.test(ps)||GEN_RE.test(p)){
+    const nums=S.cols.map((_,k)=>k).filter(k=>S.types[k]==='number');
+    const pick=nums.find(k=>GEN_RE.test(stem(S.cols[k])));
+    if(pick!==undefined)return pick;
+    if(nums.length)return nums[0];
+  }
+  return null;
+}
+function firstNumeric(){return S.types.indexOf('number');}
+function cleanNum(v){const m=String(v).match(/-?\d[\d,]*(?:\.\d+)?/);return m?m[0]:v;}
+function cleanDate(v){const m=String(v).match(/\d{1,4}[-\/.]\d{1,2}[-\/.]\d{1,4}/);return m?m[0]:v;}
+const NUMOPS=['gt','gte','lt','lte','between'];
+function clauseToFilter(cl,prevCol){
+  const o=findOp(cl);if(!o)throw E('errNL');
+  const phrase=stripNoise(o.left);
+  let col=null;
+  if(phrase){col=resolveColumn(phrase);if(col===null)throw E('errNLCol',{c:phrase,l:S.cols.join(', ')});}
+  const op=o.op;
+  if(col===null){
+    if(NUMOPS.indexOf(op)>=0){col=prevCol!=null?prevCol:firstNumeric();if(col<0)throw E('errNL');}
+    else if(op==='empty'||op==='notempty'){if(prevCol==null)throw E('errNL');col=prevCol;}
+    else col='*';
+  }
+  const f={col:col,op:op,v1:'',v2:''};
+  if(op!=='empty'&&op!=='notempty'){
+    let right=o.right.replace(/^["'“”«»‘’`]+|["'“”«»‘’`]+$/g,'').trim();
+    if(op==='contains'||op==='notcontains'||op==='starts'||op==='ends')right=right.replace(/^(?:the\s+)?(?:word|text|term|phrase|value|كلمه|عباره|نص)\s+/,'');
+    if(op==='starts'||op==='ends')right=right.replace(/^(?:بكلمه|ب)\s+/,'');
+    if(op==='between'){
+      const parts=right.split('~');
+      if(parts.length!==2)throw E('errNL');
+      f.v1=parts[0].trim();f.v2=parts[1].trim();
+    }else f.v1=right;
+    if(f.v1===''&&op!=='between')throw E('errNeedValue');
+    if(col!=='*'&&NUMOPS.concat(['equals','notequals']).indexOf(op)>=0){
+      const ty=S.types[col];
+      if(ty==='number'){f.v1=cleanNum(f.v1);f.v2=cleanNum(f.v2);}
+      else if(ty==='date'){f.v1=cleanDate(f.v1);f.v2=cleanDate(f.v2);}
+    }
+    if((op==='starts'||op==='ends')&&/[\u0600-\u06FF]/.test(f.v1)&&f.v1.length>1&&f.v1.charAt(0)==='ب'){
+      const alt={col:col,op:op,v1:f.v1.slice(1),v2:''};
+      if(countRows(alt)>countRows(f))f.v1=alt.v1;
+    }
+  }else if(col==='*')throw E('errNL');
+  const err=validateFilter(f);if(err)throw E(err.key,err.params);
+  return f;
+}
+function parseNL(q){
+  let n=norm(q).replace(/[?؟!؛;]+$/,'').replace(/\.$/,'').trim();
+  if(!n)throw E('errNL');
+  if(CLEAR_RE.test(n))return {clear:true,filters:[]};
+  n=n.replace(/\border(?:ed)? by\b/g,'sort');
+  n=n.replace(/(?:between|بين)\s+(-?[\d.,\/\-]+?)\s+(?:and|to|و|الي|-)\s+(-?[\d.,\/\-]+)/g,'between $1~$2');
+  n=n.replace(/(?:between|بين)\s+(-?[\d.,\/\-]+?)\s*و\s*(-?[\d.,\/\-]+)/g,'between $1~$2');
+  n=n.replace(/(?:من|from)\s+(-?[\d.,\/\-]+)\s+(?:الي|to|-)\s+(-?[\d.,\/\-]+)/g,'between $1~$2');
+  const segs=[{t:'f',w:[]}];
+  for(const w of n.split(' ')){
+    if(SORTW.has(w))segs.push({t:'s',w:[]});
+    else if(GROUPW.has(w))segs.push({t:'g',w:[]});
+    else segs[segs.length-1].w.push(w);
+  }
+  const res={filters:[],sortCol:null,sortDir:1,groupCol:null};
+  let hasCmd=false;
+  for(let i=1;i<segs.length;i++){
+    const sg=segs[i];let w=sg.w.slice();
+    while(w.length&&(w[0]==='by'||w[0]==='حسب'||w[0]==='علي'))w.shift();
+    while(w.length&&(w[w.length-1]==='and'||w[w.length-1]==='و'))w.pop();
+    let dir=1;
+    if(sg.t==='s'&&w.length&&DIRS[w[w.length-1]]!==undefined){dir=DIRS[w.pop()];}
+    const phrase=w.join(' ');
+    const col=resolveColumn(phrase);
+    if(col===null)throw E('errNLCol',{c:phrase,l:S.cols.join(', ')});
+    if(sg.t==='s'){res.sortCol=col;res.sortDir=dir;}else res.groupCol=col;
+    hasCmd=true;
+  }
+  let text=segs[0].w.join(' ').trim().replace(/\s+(?:and|و)$/,'');
+  const noiseOnly=stripNoise(text)==='';
+  if(!noiseOnly||!hasCmd){
+    if(noiseOnly&&!findOp(text))throw E('errNL');
+    const parts=text.split(/\s+(and|و)\s+/),clauses=[];
+    for(let i=0;i<parts.length;i+=2){
+      const p=parts[i];
+      if(i>0&&clauses.length&&!findOp(p))clauses[clauses.length-1]+=' '+parts[i-1]+' '+p;else clauses.push(p);
+    }
+    let prev=null;
+    for(const cl of clauses){const f=clauseToFilter(cl,prev);res.filters.push(f);prev=f.col==='*'?null:f.col;}
+  }
+  return res;
+}
+function runNL(){
+  if(!S.rows.length){showMsg('errNoData',null,'err');return;}
+  const q=$('nl').value.trim();
+  try{
+    const res=parseNL(q);
+    if(res.clear){S.filters=[];S.search='';$('search').value='';S.sortCol=-1;S.groupCol=-1;syncControls();renderAll();showMsg('cleared',null,'ok');return;}
+    const desc=[];
+    for(const f of res.filters){S.filters.push(f);desc.push(filterPlain(f));}
+    if(res.sortCol!==null){S.sortCol=res.sortCol;S.sortDir=res.sortDir;desc.push((lang==='ar'?'فرز: ':'Sort: ')+S.cols[res.sortCol]);}
+    if(res.groupCol!==null){S.groupCol=res.groupCol;desc.push((lang==='ar'?'تجميع: ':'Group: ')+S.cols[res.groupCol]);}
+    S.page=0;syncControls();renderAll();
+    showMsg('okNL',{s:desc.join(' · ')},'ok');
+  }catch(e){
+    if(e&&e.key==='errNL')showMsg('errNL',{q:q},'err');
+    else if(e&&e.key)showMsg(e.key,e.params,'err');
+    else showMsg('errUnknown',{m:(e&&e.message)||''},'err');
+  }
+}
+
+/* ======================= Messages ======================= */
+function showMsg(key,params,type,extra){S.lastMsg=key?{key:key,params:params,type:type,extra:extra||[]}:null;renderMsg();}
+function renderMsg(){
+  const el=$('msg'),m=S.lastMsg;
+  if(!m){el.hidden=true;el.textContent='';return;}
+  el.hidden=false;
+  const hasWarn=m.extra&&m.extra.length;
+  el.className='msg '+(hasWarn&&m.type==='ok'?'ok':m.type);
+  let txt=t(m.key,m.params);
+  if(hasWarn)txt+='\n'+m.extra.map(x=>t(x.key,x.params)).join('\n');
+  el.textContent=txt;
+}
+
+/* ======================= Controls ======================= */
+function fill(sel,items,keep){
+  const old=sel.value;
+  sel.innerHTML=items.map(i=>'<option value="'+esc(i.v)+'">'+esc(i.l)+'</option>').join('');
+  if(keep&&items.some(i=>String(i.v)===old))sel.value=old;
+}
+const OPS_TEXT=['contains','notcontains','equals','notequals','starts','ends','empty','notempty'];
+const OPS_NUM=['equals','notequals','gt','gte','lt','lte','between','empty','notempty','contains'];
+const OPS_ALL=['contains','notcontains','equals','notequals','starts','ends'];
+function opsFor(col){if(col==='*')return OPS_ALL;return S.types[col]==='text'?OPS_TEXT:OPS_NUM;}
+function fillOps(keep){
+  const cv=$('fCol').value;if(cv==='')return;
+  const col=cv==='*'?'*':+cv;
+  fill($('fOp'),opsFor(col).map(o=>({v:o,l:t('op_'+o)})),keep);
+  syncOpUI();
+}
+function syncOpUI(){
+  const op=$('fOp').value;
+  $('fV2wrap').hidden=op!=='between';
+  $('fV1').disabled=(op==='empty'||op==='notempty');
+}
+function refreshControls(keep){
+  const colItems=S.cols.map((n,i)=>({v:i,l:n}));
+  const numItems=colItems.filter(i=>S.types[i.v]==='number');
+  fill($('fCol'),[{v:'*',l:t('fAllFields')}].concat(colItems),keep);
+  fillOps(keep);
+  fill($('chCol'),colItems,keep);
+  fill($('chVal'),[{v:'count',l:t('optCount')}].concat(numItems),keep);
+  fill($('sortCol'),[{v:-1,l:t('sortNone')}].concat(colItems),keep);
+  fill($('grpCol'),[{v:-1,l:t('groupNone')}].concat(colItems),keep);
+  fill($('grpMeasure'),[{v:-1,l:t('measureNone')}].concat(numItems),keep);
+}
+function syncControls(){
+  $('sortCol').value=String(S.sortCol);$('sortDir').value=String(S.sortDir);
+  $('grpCol').value=String(S.groupCol);$('grpMeasure').value=String(S.groupMeasure);
+}
+function pickDefaultChart(){
+  let best=-1,bs=-1;
+  S.cols.forEach(function(_,c){
+    const ty=S.types[c],u=new Set();
+    for(let r=0;r<S.rows.length&&u.size<=60;r++)if(!S.miss[r][c])u.add(S.rows[r][c]);
+    let score=0;
+    if(ty==='text'&&u.size>=2&&u.size<=30)score=3;else if(ty==='date')score=2;else if(ty==='number')score=1;
+    if(score>bs){bs=score;best=c;}
+  });
+  if(best<0)best=0;
+  $('chCol').value=String(best);
+  const ty=S.types[best];
+  $('chType').value=ty==='date'?'line':(ty==='number'?'hist':'bar');
+  $('chVal').value='count';
+}
+
+/* ======================= Statistics ======================= */
+function colStats(c){
+  const type=S.types[c];
+  let n=0,miss=0,sum=0,min=Infinity,max=-Infinity;
+  const freq=new Map(),nums=[];
+  for(const r of S.view){
+    if(S.miss[r][c]){miss++;continue;}
+    n++;const v=S.rows[r][c];freq.set(v,(freq.get(v)||0)+1);
+    const p=S.pv[r][c];
+    if(type==='number'&&p!==null){sum+=p;nums.push(p);}
+    if((type==='number'||type==='date')&&p!==null){if(p<min)min=p;if(p>max)max=p;}
+  }
+  const st={c:c,type:type,n:n,miss:miss,unique:freq.size,out:0};
+  if(type==='number'&&nums.length){
+    nums.sort((a,b)=>a-b);
+    st.sum=sum;st.avg=sum/nums.length;st.min=nums[0];st.max=nums[nums.length-1];st.med=quantile(nums,.5);
+    const q1=quantile(nums,.25),q3=quantile(nums,.75),iqr=q3-q1;
+    if(iqr>0)st.out=nums.filter(x=>x<q1-1.5*iqr||x>q3+1.5*iqr).length;
+  }
+  if(type==='date'&&isFinite(min)){st.min=min;st.max=max;}
+  st.top=Array.from(freq.entries()).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return st;
+}
+
+/* ======================= Rendering ======================= */
+function renderCards(){
+  const total=S.rows.length,n=S.view.length,nc=S.cols.length;
+  let miss=0;for(const s of S.stats)miss+=s.miss;
+  const cells=n*nc,comp=cells?((cells-miss)/cells*100):0;
+  const cnt={number:0,date:0,text:0};S.types.forEach(x=>cnt[x]++);
+  const card=(l,v,s)=>'<div class="stat"><div class="lbl">'+esc(l)+'</div><div class="val">'+esc(v)+'</div><div class="sub">'+esc(s)+'</div></div>';
+  $('cards').innerHTML=
+    card(t('cardRecords'),fmt(n),t('cardRecordsSub',{n:fmt(total)}))+
+    card(t('cardCols'),fmt(nc),t('cardColsSub',{n:cnt.number,d:cnt.date,t:cnt.text}))+
+    card(t('cardMissing'),fmt(miss),t('cardMissingSub'))+
+    card(t('cardComplete'),fmt(comp)+'%',t('cardCompleteSub'));
+}
+function renderColTable(){
+  const th=k=>'<th>'+esc(t(k))+'</th>';
+  let h='<thead><tr>'+['thCol','thType','thUnique','thMissing','thSum','thAvg','thMin','thMax','thMedian','thTop'].map(th).join('')+'</tr></thead><tbody>';
+  for(const s of S.stats){
+    const isN=s.type==='number',isD=s.type==='date';
+    const fm=x=>isN?fmt(x):(isD?(x==null?'—':fmtDate(x)):'—');
+    const top=(s.top.length&&s.top[0][1]>1)?s.top.map(function(e){return '<bdi>'+esc(String(e[0]).slice(0,40))+'</bdi> ×'+e[1];}).join(' · '):'—';
+    h+='<tr><td><b><bdi>'+esc(S.cols[s.c])+'</bdi></b></td><td><span class="tag '+s.type+'">'+esc(t('type_'+s.type))+'</span></td>'+
+      '<td class="num">'+fmt(s.unique)+'</td><td class="num">'+fmt(s.miss)+'</td>'+
+      '<td class="num">'+(isN?fmt(s.sum):'—')+'</td><td class="num">'+(isN?fmt(s.avg):'—')+'</td>'+
+      '<td class="num">'+((isN||isD)?fm(s.min):'—')+'</td><td class="num">'+((isN||isD)?fm(s.max):'—')+'</td>'+
+      '<td class="num">'+(isN?fmt(s.med):'—')+'</td><td title="'+esc(top)+'">'+top+'</td></tr>';
+  }
+  $('colTable').innerHTML=h+'</tbody>';
+}
+function renderInsights(){
+  const items=[];
+  S.stats.filter(s=>s.n>=4&&s.unique>1&&s.unique<s.n&&s.top.length&&s.top[0][1]>=2)
+    .map(s=>({s:s,p:s.top[0][1]/s.n})).sort((a,b)=>b.p-a.p).slice(0,4)
+    .forEach(function(x){items.push(t('insTop',{c:'<bdi>'+esc(S.cols[x.s.c])+'</bdi>',v:'<bdi>'+esc(String(x.s.top[0][0]).slice(0,40))+'</bdi>',n:x.s.top[0][1],p:fmt(x.p*100)}));});
+  S.stats.filter(s=>s.miss>0).sort((a,b)=>b.miss-a.miss).slice(0,3)
+    .forEach(function(s){items.push(t('insMiss',{c:'<bdi>'+esc(S.cols[s.c])+'</bdi>',n:s.miss,p:fmt(s.miss/(S.view.length||1)*100)}));});
+  S.stats.filter(s=>s.n>=5&&s.unique===s.n&&s.type!=='date').slice(0,2)
+    .forEach(function(s){items.push(t('insUnique',{c:'<bdi>'+esc(S.cols[s.c])+'</bdi>'}));});
+  S.stats.filter(s=>s.out>0).slice(0,3)
+    .forEach(function(s){items.push(t('insOut',{c:'<bdi>'+esc(S.cols[s.c])+'</bdi>',n:s.out}));});
+  $('insights').innerHTML=items.length?items.map(i=>'<li>'+i+'</li>').join(''):'<li>'+esc(t('noInsights'))+'</li>';
+}
+
+const PAL=['#2563eb','#16a34a','#f59e0b','#dc2626','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#475569'];
+function aggregate(idx,vc,agg){
+  if(vc<0)return idx.length;
+  let n=0,sum=0,mn=Infinity,mx=-Infinity;
+  for(const r of idx){const p=S.pv[r][vc];if(p===null||S.miss[r][vc])continue;n++;sum+=p;if(p<mn)mn=p;if(p>mx)mx=p;}
+  if(!n)return 0;
+  if(agg==='sum')return sum;if(agg==='avg')return sum/n;if(agg==='min')return mn;return mx;
+}
+function chartGroups(c,kind,topN,vc,agg){
+  const ty=S.types[c],idx=[];
+  for(const r of S.view)if(!S.miss[r][c])idx.push(r);
+  const notes=[];let groups=[];
+  if(!idx.length)return {groups:groups,notes:notes};
+  if(ty==='number'){
+    const items=[];let lo=Infinity,hi=-Infinity;
+    for(const r of idx){const v=S.pv[r][c];if(v===null)continue;items.push([r,v]);if(v<lo)lo=v;if(v>hi)hi=v;}
+    if(!items.length)return {groups:groups,notes:notes};
+    const uniq=new Set(items.map(i=>i[1])).size;
+    if(kind==='hist'||uniq>15){
+      if(lo===hi)groups=[{label:fmt(lo),rows:items.map(i=>i[0])}];
+      else{
+        const k=Math.min(20,Math.max(5,Math.ceil(Math.log2(items.length)+1))),w=(hi-lo)/k;
+        for(let b=0;b<k;b++)groups.push({label:fmt(lo+b*w)+' – '+fmt(lo+(b+1)*w),rows:[]});
+        for(const it of items){let b=Math.floor((it[1]-lo)/w);if(b>=k)b=k-1;groups[b].rows.push(it[0]);}
+      }
+      notes.push({k:'chartBins'});
+    }else{
+      const m=new Map();
+      for(const it of items){if(!m.has(it[1]))m.set(it[1],[]);m.get(it[1]).push(it[0]);}
+      groups=Array.from(m.entries()).sort((a,b)=>a[0]-b[0]).map(e=>({label:fmt(e[0]),rows:e[1]}));
+    }
+  }else if(ty==='date'){
+    let lo=Infinity,hi=-Infinity;
+    for(const r of idx){const p=S.pv[r][c];if(p===null)continue;if(p<lo)lo=p;if(p>hi)hi=p;}
+    const month=(hi-lo)/864e5>62,m=new Map();
+    for(const r of idx){const p=S.pv[r][c];if(p===null)continue;const key=fmtDate(p).slice(0,month?7:10);if(!m.has(key))m.set(key,[]);m.get(key).push(r);}
+    groups=Array.from(m.entries()).sort((a,b)=>a[0]<b[0]?-1:1).map(e=>({label:e[0],rows:e[1]}));
+  }else{
+    if(kind==='hist')notes.push({k:'chartHistFb'});
+    const m=new Map();
+    for(const r of idx){const key=S.nr[r][c];if(!m.has(key))m.set(key,{label:S.rows[r][c],rows:[]});m.get(key).rows.push(r);}
+    groups=Array.from(m.values());
+    if(vc>=0)groups.sort((a,b)=>aggregate(b.rows,vc,agg)-aggregate(a.rows,vc,agg));
+    else groups.sort((a,b)=>b.rows.length-a.rows.length);
+    if(groups.length>topN){notes.push({k:'chartTop',p:{n:topN,m:groups.length}});groups=groups.slice(0,topN);}
+  }
+  return {groups:groups,notes:notes};
+}
+function drawChart(){
+  const note=$('chartNote'),box=$('chartBox');
+  note.textContent='';
+  if(S.chart){S.chart.destroy();S.chart=null;}
+  if(typeof Chart==='undefined'){box.hidden=true;note.textContent=t('chartMissing');return;}
+  if(!S.cols.length||!S.view.length){box.hidden=true;note.textContent=t('chartNoData');return;}
+  const c=+$('chCol').value,ct=$('chType').value,agg=$('chAgg').value,topN=+$('chTop').value||10;
+  const vc=$('chVal').value==='count'?-1:+$('chVal').value;
+  if(isNaN(c)){box.hidden=true;return;}
+  const g=chartGroups(c,ct,topN,vc,agg);
+  if(!g.groups.length){box.hidden=true;note.textContent=t('chartNoData');return;}
+  box.hidden=false;
+  const labels=g.groups.map(x=>x.label),data=g.groups.map(x=>aggregate(x.rows,vc,agg));
+  const dsLabel=vc<0?t('chartCount'):t('agg'+agg.charAt(0).toUpperCase()+agg.slice(1))+' '+S.cols[vc];
+  const pie=(ct==='pie'||ct==='doughnut'),isAr=lang==='ar';
+  const ds={label:dsLabel,data:data,
+    backgroundColor:pie?labels.map((_,i)=>PAL[i%PAL.length]):(ct==='line'?PAL[0]+'33':PAL[0]+'cc'),
+    borderColor:pie?'#ffffff':PAL[0],borderWidth:pie?2:(ct==='line'?2:1),tension:.25,fill:false,pointRadius:labels.length>60?0:3};
+  if(ct==='hist'){ds.categoryPercentage=1;ds.barPercentage=1;}
+  Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color='#475569';
+  const opts={responsive:true,maintainAspectRatio:false,
+    animation:S.view.length>5000?false:{duration:300},
+    plugins:{legend:{display:pie,rtl:isAr,position:'bottom',labels:{usePointStyle:true}},tooltip:{rtl:isAr,textDirection:isAr?'rtl':'ltr'}}};
+  if(!pie)opts.scales={y:{beginAtZero:true,ticks:{callback:function(v){return fmt(v);}}},x:{ticks:{autoSkip:true,maxRotation:60}}};
+  try{
+    S.chart=new Chart($('chart'),{type:ct==='hist'?'bar':ct,data:{labels:labels,datasets:[ds]},options:opts});
+  }catch(e){box.hidden=true;note.textContent=t('errUnknown',{m:e.message});return;}
+  note.textContent=g.notes.map(n=>t(n.k,n.p)).join(' ');
+}
+
+function filterHTML(f){
+  const cn=f.col==='*'?t('fAllFields'):S.cols[f.col];
+  let v='';
+  if(f.op==='between')v=f.v1+' ↔ '+f.v2;else if(f.op!=='empty'&&f.op!=='notempty')v=f.v1;
+  return '<bdi>'+esc(cn)+'</bdi> '+esc(t('op_'+f.op))+(v?' <bdi>'+esc(v)+'</bdi>':'');
+}
+function renderChips(){
+  let h=S.filters.map((f,i)=>'<span class="chip">'+filterHTML(f)+'<button type="button" data-i="'+i+'" aria-label="'+esc(t('removeFilter'))+'" title="'+esc(t('removeFilter'))+'">×</button></span>').join('');
+  if(S.filters.length)h+='<button type="button" class="btn" id="chipsClear">'+esc(t('clearFilters'))+'</button>';
+  $('chips').innerHTML=h;
+}
+function hl(text,term){
+  if(!term)return esc(text);
+  const lower=text.toLowerCase(),tl=term.toLowerCase();
+  let out='',i=0,j;
+  while((j=lower.indexOf(tl,i))>=0){out+=esc(text.slice(i,j))+'<mark>'+esc(text.slice(j,j+tl.length))+'</mark>';i=j+tl.length;}
+  return out+esc(text.slice(i));
+}
+function renderTable(){
+  const n=S.view.length,ps=S.pageSize,pages=Math.max(1,Math.ceil(n/ps));
+  if(S.page>=pages)S.page=pages-1;if(S.page<0)S.page=0;
+  const from=S.page*ps,to=Math.min(n,from+ps),term=S.search.trim();
+  $('tInfo').textContent=n?t('showing',{a:fmt(from+1),b:fmt(to),n:fmt(n),t:fmt(S.rows.length)}):t('noRows');
+  let h='<thead><tr><th>#</th>'+S.cols.map(function(name,c){
+    const arrow=S.sortCol===c?(S.sortDir===1?' ▲':' ▼'):'';
+    return '<th class="sortable" data-c="'+c+'" title="'+esc(name)+'"><bdi>'+esc(name)+'</bdi>'+arrow+'</th>';
+  }).join('')+'</tr></thead><tbody>';
+  if(!n)h+='<tr><td colspan="'+(S.cols.length+1)+'">'+esc(t('noRows'))+'</td></tr>';
+  for(let i=from;i<to;i++){
+    const r=S.view[i];
+    h+='<tr><td class="num">'+(r+1)+'</td>'+S.rows[r].map(function(v,c){
+      const isNum=S.types[c]==='number'&&S.pv[r][c]!==null;
+      return '<td dir="auto"'+(isNum?' class="num"':'')+' title="'+esc(v)+'">'+hl(v,term)+'</td>';
+    }).join('')+'</tr>';
+  }
+  $('dataTable').innerHTML=h+'</tbody>';
+  $('pager').innerHTML=pages>1?
+    '<button type="button" class="btn" data-d="-1" '+(S.page<=0?'disabled':'')+'>'+esc(t('prev'))+'</button><span>'+esc(t('pageOf',{p:S.page+1,t:pages}))+'</span><button type="button" class="btn" data-d="1" '+(S.page>=pages-1?'disabled':'')+'>'+esc(t('next'))+'</button>':'';
+}
+function renderGroup(){
+  const card=$('groupCard');
+  if(S.groupCol<0||!S.rows.length){card.hidden=true;return;}
+  card.hidden=false;
+  const c=S.groupCol,m=S.groupMeasure,map=new Map();
+  for(const r of S.view){
+    const key=S.miss[r][c]?'':S.nr[r][c];
+    let g=map.get(key);
+    if(!g){g={label:S.miss[r][c]?t('emptyVal'):S.rows[r][c],count:0,n:0,sum:0,min:Infinity,max:-Infinity};map.set(key,g);}
+    g.count++;
+    if(m>=0){const p=S.pv[r][m];if(p!==null&&!S.miss[r][m]){g.n++;g.sum+=p;if(p<g.min)g.min=p;if(p>g.max)g.max=p;}}
+  }
+  const arr=Array.from(map.values()).sort((a,b)=>b.count-a.count);
+  const LIM=200,total=S.view.length||1;
+  let h='<thead><tr><th>'+esc(S.cols[c])+'</th><th>'+esc(t('gCount'))+'</th><th>'+esc(t('gPct'))+'</th>'+(m>=0?'<th>'+esc(t('gSum'))+'</th><th>'+esc(t('gAvg'))+'</th><th>'+esc(t('gMin'))+'</th><th>'+esc(t('gMax'))+'</th>':'')+'</tr></thead><tbody>';
+  for(const g of arr.slice(0,LIM)){
+    h+='<tr><td dir="auto"><bdi>'+esc(g.label)+'</bdi></td><td class="num">'+fmt(g.count)+'</td><td class="num">'+fmt(g.count/total*100)+'%</td>'+
+      (m>=0?'<td class="num">'+fmt(g.sum)+'</td><td class="num">'+(g.n?fmt(g.sum/g.n):'—')+'</td><td class="num">'+(g.n?fmt(g.min):'—')+'</td><td class="num">'+(g.n?fmt(g.max):'—')+'</td>':'')+'</tr>';
+  }
+  $('groupTable').innerHTML=h+'</tbody>';
+  const parts=[];
+  if(m>=0)parts.push(t('gMeasure')+': '+S.cols[m]);
+  if(arr.length>LIM)parts.push(t('gLimit',{n:LIM}));
+  $('gNote').textContent=parts.join(' — ');
+}
+function renderAll(){
+  if(!S.rows.length)return;
+  compute();
+  S.stats=S.cols.map((_,c)=>colStats(c));
+  renderCards();renderColTable();renderInsights();drawChart();renderChips();renderTable();renderGroup();
+}
+
+/* ======================= Actions ======================= */
+function analyze(text){
+  try{
+    const ds=buildDataset(text);
+    applyDataset(ds);
+    $('app').hidden=false;
+    renderAll();
+    showMsg('okLoaded',{r:fmt(ds.rows.length),c:ds.cols.length},'ok',ds.warn);
+  }catch(e){
+    if(e&&e.key)showMsg(e.key,e.params,'err');
+    else showMsg('errUnknown',{m:(e&&e.message)||''},'err');
+  }
+}
+async function handleFile(file){
+  if(!file)return;
+  if(!/\.(csv|tsv|txt|tab)$/i.test(file.name)&&!/^text\//.test(file.type)){showMsg('errFileType',{n:file.name},'err');return;}
+  try{
+    const buf=await file.arrayBuffer(),u=new Uint8Array(buf);
+    if(!u.length){showMsg('errEmpty',null,'err');return;}
+    if(u[0]===0x50&&u[1]===0x4B){showMsg('errBinary',null,'err');return;}
+    let text;
+    if(u[0]===0xFF&&u[1]===0xFE){text=new TextDecoder('utf-16le').decode(buf);}
+    else if(u[0]===0xFE&&u[1]===0xFF){text=new TextDecoder('utf-16be').decode(buf);}
+    else{
+      try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf);}
+      catch(e1){try{text=new TextDecoder('windows-1256').decode(buf);}catch(e2){showMsg('errCorrupt',null,'err');return;}}
+    }
+    $('raw').value=text;
+    analyze(text);
+  }catch(e){showMsg('errFileRead',null,'err');}
+}
+function addFilterFromUI(){
+  if(!S.rows.length){showMsg('errNoData',null,'err');return;}
+  const cv=$('fCol').value,col=cv==='*'?'*':+cv;
+  const f={col:col,op:$('fOp').value,v1:$('fV1').value.trim(),v2:$('fV2').value.trim()};
+  const err=validateFilter(f);
+  if(err){showMsg(err.key,err.params,'err');return;}
+  S.filters.push(f);S.page=0;
+  $('fV1').value='';$('fV2').value='';
+  showMsg(null);renderAll();
+}
+function exportCSV(){
+  if(!S.view.length){showMsg('noRows',null,'warn');return;}
+  const q=v=>{v=String(v);return /[",;\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const lines=[S.cols.map(q).join(',')];
+  for(const r of S.view)lines.push(S.rows[r].map(q).join(','));
+  const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='results.csv';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},1500);
+}
+function clearAll(){
+  $('raw').value='';
+  S.cols=[];S.rows=[];S.types=[];S.miss=[];S.pv=[];S.nr=[];S.rowText=[];S.filters=[];S.view=[];S.stats=[];
+  if(S.chart){S.chart.destroy();S.chart=null;}
+  $('app').hidden=true;showMsg(null);
+}
+const SAMPLE='المدينة,المنتج,الفئة,الكمية,القيمة,التاريخ,العميل\n'+
+'جدة,لابتوب,إلكترونيات,5,12500,2026-01-05,شركة الأفق\n'+
+'Riyadh,طابعة,إلكترونيات,3,4500,2026-01-12,Al Noor Trading\n'+
+'جدة,كرسي مكتب,أثاث,10,8200,2026-01-20,مؤسسة الرواد\n'+
+'الدمام,مكتب,أثاث,2,3900,2026-02-02,Gulf Supplies\n'+
+'Jeddah,ورق A4,قرطاسية,200,1800,2026-02-09,Red Sea Co\n'+
+'الرياض,حبر طابعة,قرطاسية,40,2600,2026-02-15,شركة الأفق\n'+
+'جدة,شاشة,إلكترونيات,8,9600,2026-02-28,Al Noor Trading\n'+
+'مكة,طاولة اجتماعات,أثاث,1,15000,2026-03-04,مؤسسة الرواد\n'+
+'Riyadh,لابتوب,إلكترونيات,12,30000,2026-03-11,Gulf Supplies\n'+
+'الدمام,أقلام,قرطاسية,500,950,2026-03-19,شركة الأفق\n'+
+'Jeddah,راوتر,إلكترونيات,6,2100,2026-03-27,Red Sea Co\n'+
+'جدة,خزانة ملفات,أثاث,4,5200,2026-04-03,Al Noor Trading\n'+
+'المدينة,ماسح ضوئي,إلكترونيات,2,,2026-04-10,مؤسسة الرواد\n'+
+'الرياض,كرسي مكتب,أثاث,20,41000,2026-04-18,Gulf Supplies\n'+
+'جدة,دفاتر,قرطاسية,150,1200,2026-04-25,شركة الأفق\n'+
+'الدمام,شاشة,إلكترونيات,5,6000,2026-05-02,Red Sea Co';
+
+/* ======================= Language ======================= */
+function applyStatic(){
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  document.title=t('appTitle');
+  document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.setAttribute('placeholder',t(el.getAttribute('data-i18n-ph')));});
+  $('langBtn').textContent=t('langBtn');
+  $('nlHint').textContent=t('nlHint');
+}
+function setLang(l){
+  lang=l;
+  try{localStorage.setItem('ida_lang',l);}catch(e){}
+  applyStatic();
+  if(S.rows.length){refreshControls(true);syncControls();renderAll();}
+  renderMsg();
+}
+
+/* ======================= Events ======================= */
+let st=null;
+$('langBtn').addEventListener('click',function(){setLang(lang==='ar'?'en':'ar');});
+$('btnAnalyze').addEventListener('click',function(){analyze($('raw').value);});
+$('btnSample').addEventListener('click',function(){$('raw').value=SAMPLE;analyze(SAMPLE);});
+$('btnClear').addEventListener('click',clearAll);
+$('file').addEventListener('change',function(e){const f=e.target.files&&e.target.files[0];e.target.value='';handleFile(f);});
+$('raw').addEventListener('paste',function(){setTimeout(function(){if($('raw').value.trim())analyze($('raw').value);},40);});
+$('raw').addEventListener('dragover',function(e){e.preventDefault();});
+$('raw').addEventListener('drop',function(e){e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)handleFile(f);});
+$('search').addEventListener('input',function(e){
+  clearTimeout(st);const v=e.target.value;
+  st=setTimeout(function(){S.search=v;S.page=0;renderAll();},90);
+});
+$('nlGo').addEventListener('click',runNL);
+$('nl').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();runNL();}});
+$('fCol').addEventListener('change',function(){fillOps(false);});
+$('fOp').addEventListener('change',syncOpUI);
+$('fAdd').addEventListener('click',addFilterFromUI);
+['fV1','fV2'].forEach(function(id){$(id).addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addFilterFromUI();}});});
+$('chips').addEventListener('click',function(e){
+  const b=e.target.closest('button');if(!b)return;
+  if(b.id==='chipsClear'){S.filters=[];}else if(b.hasAttribute('data-i')){S.filters.splice(+b.getAttribute('data-i'),1);}
+  S.page=0;renderAll();
+});
+['chType','chCol','chVal','chAgg','chTop'].forEach(function(id){$(id).addEventListener('change',drawChart);});
+$('sortCol').addEventListener('change',function(){S.sortCol=+$('sortCol').value;S.page=0;renderAll();});
+$('sortDir').addEventListener('change',function(){S.sortDir=+$('sortDir').value;S.page=0;renderAll();});
+$('grpCol').addEventListener('change',function(){S.groupCol=+$('grpCol').value;renderAll();});
+$('grpMeasure').addEventListener('change',function(){S.groupMeasure=+$('grpMeasure').value;renderAll();});
+$('gClose').addEventListener('click',function(){S.groupCol=-1;syncControls();renderAll();});
+$('perPage').addEventListener('change',function(){S.pageSize=+$('perPage').value||50;S.page=0;renderTable();});
+$('btnExport').addEventListener('click',exportCSV);
+$('dataTable').addEventListener('click',function(e){
+  const th=e.target.closest('th.sortable');if(!th)return;
+  const c=+th.getAttribute('data-c');
+  if(S.sortCol===c)S.sortDir=-S.sortDir;else{S.sortCol=c;S.sortDir=1;}
+  S.page=0;syncControls();renderAll();
+});
+$('pager').addEventListener('click',function(e){
+  const b=e.target.closest('button[data-d]');if(!b)return;
+  S.page+=+b.getAttribute('data-d');renderTable();
+  $('dataTable').scrollIntoView({block:'nearest'});
+});
+
+applyStatic();
+})();
+</script>
+</body>
+</html>
